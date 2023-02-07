@@ -20,8 +20,57 @@ def menu():
             \rPlease chose one of the above options.
             ''')
 
-def display_product_by_id(id):
-    product = session.query(Product).filter(Product.product_id==id).first()
+def display_product_by_id():
+    while True:
+        product_id = input("Input the Product ID you would like to fetch: ")
+        product = session.query(Product).filter(Product.product_id==product_id).first()
+        if product:
+            print(f'The product is: {product.product_name}')
+            return product
+        else:
+            print("Product doesn't exist, please enter a proper product id")
+
+
+
+def adding_product():
+    product = input("Please enter the new product name: ").strip()
+    brand_name = input("Please enter the brand name: ").strip()
+    
+    check_brand = session.query(Brands).filter(Brands.brand_name==brand_name).first()
+    if check_brand == None:
+        print("Brand doesn't exist")
+        return None
+
+    while True:
+        quantity = input("Please enter the quantity: ")
+        try:
+            quantity = int(quantity)
+            break
+        except:
+            print("Please insert a proper value(example: 5)")
+
+    
+    while True:
+        price = input("Please enter the price (example: $5.99): ")
+        while price[0] != "$":
+            price = input("Your answer needs to start with a $, Please enter the price (example: $5.99): ")
+
+        try:
+            price = price[1:]
+            new_price = clean_price(price)
+            print(new_price)
+            break
+        except:
+            print("Please insert a proper value(example: 5)")
+    
+    product_date = datetime.now()
+    product_date = product_date.date()
+
+    new_product = Product(product_name=product, brand_id=check_brand.brand_id, product_quantity=quantity, product_price=new_price, date_updated=product_date)
+    session.add(new_product)
+    session.commit()
+    print(f'Product created {new_product.product_name}')
+    return new_product
 
 
 def clean_price(price):
@@ -83,4 +132,6 @@ if __name__ == "__main__":
     #brands_add_csv()
     #inventory_add_csv()
     #app()
-    menu()
+    #menu()
+    #display_product_by_id()
+    adding_product()
