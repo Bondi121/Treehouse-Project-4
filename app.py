@@ -30,6 +30,24 @@ def display_product_by_id():
         else:
             print("Product doesn't exist, please enter a proper product id")
 
+def analyzing_database():
+    items = session.query(Product).order_by(Product.product_price).all()
+    lowest_product_price = items[0]
+    highest_product_price = items[-1]
+    #print("The cheapest product is", lowest_product_price.product_name)
+    #print("The most expensive product is", highest_product_price.product_name)
+
+    highest_quantity = session.query(Product).filter(Brands.brand_id).all()
+    brands = session.query(Brands).all()
+    brand_products = []
+
+    for brand in brands:
+        brand_products.append((brand.brand_name, len(brand.products)))
+        
+    print(brand_products)
+    
+    
+    
 
 
 def adding_product():
@@ -134,4 +152,5 @@ if __name__ == "__main__":
     #app()
     #menu()
     #display_product_by_id()
-    adding_product()
+    #adding_product()
+    analyzing_database()
