@@ -17,8 +17,11 @@ def menu():
             return user_input
         else:
             input('''
-            \rPlease chose one of the above options.
+            \rPlease chose one of the above options. Click "Enter" to see the menu again.
             ''')
+        
+
+
 
 def display_product_by_id():
     while True:
@@ -29,25 +32,23 @@ def display_product_by_id():
             return product
         else:
             print("Product doesn't exist, please enter a proper product id")
+        
 
 def analyzing_database():
     items = session.query(Product).order_by(Product.product_price).all()
     lowest_product_price = items[0]
     highest_product_price = items[-1]
-    #print("The cheapest product is", lowest_product_price.product_name)
-    #print("The most expensive product is", highest_product_price.product_name)
-
-    highest_quantity = session.query(Product).filter(Brands.brand_id).all()
     brands = session.query(Brands).all()
     brand_products = []
 
     for brand in brands:
-        brand_products.append((brand.brand_name, len(brand.products)))
+        brand_products.append((len(brand.products), brand.brand_name))
         
-    print(brand_products)
+    brand_with_highest_product = max(brand_products)
     
-    
-    
+    print(f"{lowest_product_price.product_name} has the lowest price of {lowest_product_price.product_price}.")
+    print(f"{highest_product_price.product_name} has the highest price of {highest_product_price.product_price}.")
+    print(f"{brand_with_highest_product[1]} has the most product of {brand_with_highest_product[0]} products.")
 
 
 def adding_product():
@@ -144,13 +145,55 @@ def brands_add_csv():
                 print("Brand is already stored in Database")
         session.commit()
 
+def export_data():
+    export_brands()
+    export_inventory()
+
+
+def export_brands():
+    outfile = open('brands_backup.csv', 'w')
+    outcsv = csv.writer(outfile)
+    records = session.query(Brands).all()
+    header = (Brands.__table__.columns.keys())
+
+    outcsv.writerow(header)
+    data = []
+    for brand in records:
+        data.append((brand.brand_id, brand.brand_name))
+    outcsv.writerows(data)
+    outfile.close()
+
+
+
+def export_inventory():
+    outfile = open('inventory_backup.csv', 'w')
+    outcsv = csv.writer(outfile)
+    records = session.query(Product).all()
+    header = (Product.__table__.columns.keys())
+
+    outcsv.writerow(header)
+    data = []
+    for product in records:
+        data.append((product.product_id, product.brand_id, product.product_name, product.product_quantity, product.product_price, product.date_updated))
+    outcsv.writerows(data)
+    outfile.close()
+
+
+def app():
+    decision = menu().upper()
+    print(decision)
+    if decision == "V":
+        display_product_by_id()
+    elif decision == "N":
+        adding_product()
+    elif decision == "A":
+        analyzing_database()
+    elif decision == "B":
+        export_data()
+
 
 if __name__ == "__main__":
     Base.metadata.create_all(engine)
-    #brands_add_csv()
-    #inventory_add_csv()
-    #app()
-    #menu()
-    #display_product_by_id()
-    #adding_product()
-    analyzing_database()
+    brands_add_csv()
+    inventory_add_csv()
+    app()

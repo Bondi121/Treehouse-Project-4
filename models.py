@@ -26,7 +26,7 @@ class Product(Base):
     product_quantity = Column(Integer)
     product_price = Column(Integer)
     date_updated = Column(Date)
-    brand = relationship(Brands, back_populates="products")
+    brand = relationship("Brands", back_populates="products")
 
     def __repr__(self):
         return f'{self.product_name} products'
