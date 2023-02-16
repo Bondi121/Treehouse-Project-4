@@ -20,18 +20,6 @@ def menu():
             \rPlease chose one of the above options. Click "Enter" to see the menu again.
             ''')
         
-
-
-
-def display_product_by_id():
-    while True:
-        product_id = input("Input the Product ID you would like to fetch: ")
-        product = session.query(Product).filter(Product.product_id==product_id).first()
-        if product:
-            print(f'The product is: {product.product_name}')
-            return product
-        else:
-            print("Product doesn't exist, please enter a proper product id")
         
 
 def analyzing_database():
@@ -124,9 +112,11 @@ def inventory_add_csv():
             dollar_price = product[1][1:]
             new_price = clean_price(dollar_price)
             new_date = clean_date(product[3])
-
-            product = Product(brand_id=check_brand.brand_id, product_name=product[0], product_quantity=product[2], product_price=new_price, date_updated=new_date)
-            session.add(product)
+            check_product_in_db = session.query(Product).filter(Product.product_name==product[0].strip()).first()
+            if check_product_in_db is None:
+                product = Product(brand_id=check_brand.brand_id, product_name=product[0], product_quantity=product[2], product_price=new_price, date_updated=new_date)
+                session.add(product)
+                
         session.commit()
 
 
@@ -137,13 +127,24 @@ def brands_add_csv():
             if initial == 0:
                 initial += 1
                 continue
-            check_brand_in_db = session.query(Brands).filter(Brands.brand_name==brand).first()
-            if check_brand_in_db == None:
+            check_brand_in_db = session.query(Brands).filter(Brands.brand_name==brand.strip()).first()
+            if check_brand_in_db is None:
                 store_brand = Brands(brand_name=brand.strip())
                 session.add(store_brand)
-            else:
-                print("Brand is already stored in Database")
         session.commit()
+
+
+def display_product_by_id():
+    while True:
+        product_id = input("Input the Product ID you would like to fetch: ")
+        product = session.query(Product).filter(Product.product_id==product_id).first()
+        if product:
+            print(f'Your selected product is: Product name: {product.product_name} - Brand name: {product.brand.brand_name} - Quantity: {product.product_quantity} - Price: {product.product_price} - Date updated: {product.date_updated}')
+            return product
+        else:
+            print("Product doesn't exist, please enter a proper product id")
+
+
 
 def export_data():
     export_brands()
